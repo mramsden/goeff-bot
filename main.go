@@ -53,8 +53,13 @@ func voiceChannelStateUpdate(notifyChannel string) func(*discordgo.Session, *dis
 			return
 		}
 
+		memberName := state.Member.DisplayName()
+		if len(memberName) == 0 || len(channel.Name) == 0 {
+			return
+		}
+
 		_, err = s.ChannelMessageSendEmbed(notifyChannel, &discordgo.MessageEmbed{
-			Description: fmt.Sprintf("%s just joined %s", state.Member.DisplayName(), channel.Name),
+			Description: fmt.Sprintf("%s just joined %s", memberName, channel.Name),
 		})
 		if err != nil {
 			log.Println("failed sending notification to channel:", err)
