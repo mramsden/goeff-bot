@@ -32,7 +32,7 @@ docker build goeff-bot:latest .
 Now that this has been run you can run the following command to start the container:
 
 ```
-docker run -e DISCORD_BOT_TOKEN=your_bot_token_here -e DISCORD_NOTIFY_CHANNEL=channel_id_to_notify --restart yes -it goeff-bot:latest
+docker run -e DISCORD_BOT_TOKEN=your_bot_token_here -e DISCORD_NOTIFY_CHANNEL=channel_id_to_notify --restart always -it goeff-bot:latest
 ```
 
 The two environment variables are required in this command other options can be adjusted as required. You should now see the bot come online in your Discord. Join a voice channel on your server and you will see a message arrive.
