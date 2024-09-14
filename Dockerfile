@@ -8,6 +8,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY main.go ./
+COPY presence ./presence
 RUN go build -o goeff-bot .
 
 FROM scratch
