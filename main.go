@@ -30,7 +30,7 @@ func main() {
 
 	dg.AddHandler(voiceChannelStateUpdate(notifyChannel))
 	dg.AddHandler(connected)
-	dg.Identify.Intents = discordgo.IntentsGuildMembers ^ discordgo.IntentsGuildVoiceStates
+	dg.Identify.Intents = discordgo.IntentsGuildVoiceStates
 
 	err = dg.Open()
 	if err != nil {
