@@ -54,6 +54,11 @@ func main() {
 
 		_, err = dg.ChannelMessageSendEmbed(notifyChannel, &discordgo.MessageEmbed{
 			Description: fmt.Sprintf("%s just joined %s", member.DisplayName(), channel.Name),
+			Thumbnail: &discordgo.MessageEmbedThumbnail{
+				URL:    member.AvatarURL("1024"),
+				Width:  512,
+				Height: 512,
+			},
 		})
 		if err != nil {
 			log.Println("failed sending notification to channel:", err)
