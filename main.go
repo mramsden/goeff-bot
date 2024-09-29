@@ -80,6 +80,11 @@ func makePresenceHandler(dg *discordgo.Session, notifyChannel string) func(prese
 			log.Println("could not resolve guild member:", err)
 		}
 
+		// do not announce bot users joining a channel
+		if member.User.Bot {
+			return
+		}
+
 		_, err = dg.ChannelMessageSendEmbed(notifyChannel, &discordgo.MessageEmbed{
 			Description: fmt.Sprintf("%s just joined %s", member.DisplayName(), channel.Name),
 			Thumbnail: &discordgo.MessageEmbedThumbnail{
