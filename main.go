@@ -37,7 +37,35 @@ func main() {
 		log.Fatal("error opening connection", err)
 	}
 
-	presence.Start(context.Background(), func(m presence.Member) {
+	presence.Start(context.Background(), makePresenceHandler(dg, notifyChannel))
+
+	sc := make(chan os.Signal, 1)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	<-sc
+
+	dg.Close()
+}
+
+// Discord event handlers
+
+func connected(_ *discordgo.Session, _ *discordgo.Ready) {
+	log.Println("connected to discord")
+}
+
+func voiceChannelStateUpdate(notifyChannel string) func(*discordgo.Session, *discordgo.VoiceStateUpdate) {
+	return func(s *discordgo.Session, state *discordgo.VoiceStateUpdate) {
+		if state.ChannelID == "" {
+			presence.MemberLeft(state.GuildID, state.UserID)
+		} else {
+			presence.MemberJoined(state.GuildID, state.ChannelID, state.UserID)
+		}
+	}
+}
+
+// Presence handlers
+
+func makePresenceHandler(dg *discordgo.Session, notifyChannel string) func(presence.Member) {
+	return func(m presence.Member) {
 		channel, err := dg.Channel(m.ChannelID)
 		if err != nil {
 			if restErr, ok := err.(*discordgo.RESTError); ok && restErr.Response.StatusCode == 403 {
@@ -62,26 +90,6 @@ func main() {
 		})
 		if err != nil {
 			log.Println("failed sending notification to channel:", err)
-		}
-	})
-
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	<-sc
-
-	dg.Close()
-}
-
-func connected(_ *discordgo.Session, _ *discordgo.Ready) {
-	log.Println("connected to discord")
-}
-
-func voiceChannelStateUpdate(notifyChannel string) func(*discordgo.Session, *discordgo.VoiceStateUpdate) {
-	return func(s *discordgo.Session, state *discordgo.VoiceStateUpdate) {
-		if state.ChannelID == "" {
-			presence.MemberLeft(state.GuildID, state.UserID)
-		} else {
-			presence.MemberJoined(state.GuildID, state.ChannelID, state.UserID)
 		}
 	}
 }
