@@ -12,27 +12,32 @@ You will need to have a Discord app setup in the [developer portal](https://disc
 
 Next go to the OAuth2 page and go to the OAuth2 URL Generator. Select the `bot` scope and under bot permissions select `Send Messages`. Ensure `Guild Install` is selected for the integration type. Now visit the generated URL and grant access for your bot to the server you want to monitor.
 
-### Build and run the bot
+### Run the bot
 
-The bot needs to be built before it can be run.
-
-First clone the code to your server by running:
+Run the following command to start the bot:
 
 ```
-git clone https://github.com/mramsden/goeff-bot.git
-cd goeff-bot
-```
-
-When in the `goeff-bot` directory run the following to build the docker container:
-
-```
-docker build goeff-bot:latest .
-```
-
-Now that this has been run you can run the following command to start the container:
-
-```
-docker run -e DISCORD_BOT_TOKEN=your_bot_token_here -e DISCORD_NOTIFY_CHANNEL=channel_id_to_notify --restart always -it goeff-bot:latest
+docker run -e DISCORD_BOT_TOKEN=your_bot_token_here -e DISCORD_NOTIFY_CHANNEL=channel_id_to_notify --restart always -it --name goeff-bot ghcr.io/mramsden/goeff-bot:latest
 ```
 
 The two environment variables are required in this command other options can be adjusted as required. You should now see the bot come online in your Discord. Join a voice channel on your server and you will see a message arrive.
+
+## Updates
+
+To update to the latest version of the bot run:
+
+```
+docker pull ghcr.io/mramsden/goeff-bot:latest
+```
+
+Next stop the running bot and remove it:
+
+```
+docker stop goeff-bot && docker rm goeff-bot
+```
+
+Start it again using the usual command:
+
+```
+docker run -e DISCORD_BOT_TOKEN=your_bot_token_here -e DISCORD_NOTIFY_CHANNEL=channel_id_to_notify --restart always -it --name goeff-bot ghcr.io/mramsden/goeff-bot:latest
+```
