@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -43,7 +44,9 @@ func main() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 
-	dg.Close()
+	if err := dg.Close(); err != nil {
+		log.Printf("failed closing discord session %s", err)
+	}
 }
 
 // Discord event handlers
@@ -57,7 +60,7 @@ func voiceChannelStateUpdate(notifyChannel string) func(*discordgo.Session, *dis
 		if state.ChannelID == "" {
 			presence.MemberLeft(state.GuildID, state.UserID)
 		} else {
-			presence.MemberJoined(state.GuildID, state.ChannelID, state.UserID)
+			_ = presence.MemberJoined(state.GuildID, state.ChannelID, state.UserID)
 		}
 	}
 }
@@ -68,7 +71,8 @@ func makePresenceHandler(dg *discordgo.Session, notifyChannel string) func(prese
 	return func(m presence.Member) {
 		channel, err := dg.Channel(m.ChannelID)
 		if err != nil {
-			if restErr, ok := err.(*discordgo.RESTError); ok && restErr.Response.StatusCode == 403 {
+			var restErr *discordgo.RESTError
+			if errors.As(err, &restErr) && restErr.Response.StatusCode == 403 {
 				return
 			}
 

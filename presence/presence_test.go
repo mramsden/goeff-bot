@@ -18,7 +18,7 @@ func TestPresenceReportsForNewMemberID(t *testing.T) {
 		c <- m
 	})
 
-	MemberJoined(guildID, channelID, memberID)
+	_ = MemberJoined(guildID, channelID, memberID)
 	select {
 	case <-c:
 		break
@@ -27,7 +27,7 @@ func TestPresenceReportsForNewMemberID(t *testing.T) {
 		return
 	}
 
-	MemberJoined(guildID, channelID, memberID)
+	_ = MemberJoined(guildID, channelID, memberID)
 	select {
 	case <-c:
 		t.Fatal("did not expect a member to be returned from presence monitor if they have already joined")
@@ -37,7 +37,7 @@ func TestPresenceReportsForNewMemberID(t *testing.T) {
 	}
 
 	MemberLeft(guildID, memberID)
-	MemberJoined(guildID, channelID, memberID)
+	_ = MemberJoined(guildID, channelID, memberID)
 	select {
 	case <-c:
 		break
