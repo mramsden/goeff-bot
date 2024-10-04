@@ -29,7 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	dg.AddHandler(voiceChannelStateUpdate(notifyChannel))
+	dg.AddHandler(voiceChannelStateUpdate)
 	dg.AddHandler(connected)
 	dg.Identify.Intents = discordgo.IntentsGuildVoiceStates
 
@@ -55,13 +55,11 @@ func connected(_ *discordgo.Session, _ *discordgo.Ready) {
 	log.Println("connected to discord")
 }
 
-func voiceChannelStateUpdate(notifyChannel string) func(*discordgo.Session, *discordgo.VoiceStateUpdate) {
-	return func(s *discordgo.Session, state *discordgo.VoiceStateUpdate) {
-		if state.ChannelID == "" {
-			presence.MemberLeft(state.GuildID, state.UserID)
-		} else {
-			_ = presence.MemberJoined(state.GuildID, state.ChannelID, state.UserID)
-		}
+func voiceChannelStateUpdate(_ *discordgo.Session, state *discordgo.VoiceStateUpdate) {
+	if state.ChannelID == "" {
+		presence.MemberLeft(state.GuildID, state.UserID)
+	} else {
+		_ = presence.MemberJoined(state.GuildID, state.ChannelID, state.UserID)
 	}
 }
 
