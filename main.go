@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -67,16 +66,6 @@ func voiceChannelStateUpdate(_ *discordgo.Session, state *discordgo.VoiceStateUp
 
 func makePresenceHandler(dg *discordgo.Session, notifyChannel string) func(presence.Member) {
 	return func(m presence.Member) {
-		channel, err := dg.Channel(m.ChannelID)
-		if err != nil {
-			var restErr *discordgo.RESTError
-			if errors.As(err, &restErr) && restErr.Response.StatusCode == 403 {
-				return
-			}
-
-			log.Println("could not resolve channel:", err)
-		}
-
 		member, err := dg.GuildMember(m.GuildID, m.MemberID)
 		if err != nil {
 			log.Println("could not resolve guild member:", err)
@@ -88,14 +77,22 @@ func makePresenceHandler(dg *discordgo.Session, notifyChannel string) func(prese
 			return
 		}
 
-		_, err = dg.ChannelMessageSendEmbed(notifyChannel, &discordgo.MessageEmbed{
-			Description: fmt.Sprintf("%s just joined %s", member.DisplayName(), channel.Name),
-			Thumbnail: &discordgo.MessageEmbedThumbnail{
-				URL:    member.AvatarURL("1024"),
-				Width:  512,
-				Height: 512,
+		message := &discordgo.MessageSend{
+			Embed: &discordgo.MessageEmbed{
+				Description: fmt.Sprintf("<@%s> just joined <#%s>", m.MemberID, m.ChannelID),
+				Thumbnail: &discordgo.MessageEmbedThumbnail{
+					URL:    member.AvatarURL("1024"),
+					Width:  512,
+					Height: 512,
+				},
 			},
-		})
+			AllowedMentions: &discordgo.MessageAllowedMentions{
+				Parse:       []discordgo.AllowedMentionType{discordgo.AllowedMentionTypeUsers},
+				Users:       []string{},
+				RepliedUser: false,
+			},
+		}
+		_, err = dg.ChannelMessageSendComplex(notifyChannel, message)
 		if err != nil {
 			log.Println("failed sending notification to channel:", err)
 		}
