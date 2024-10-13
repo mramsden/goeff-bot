@@ -66,22 +66,32 @@ func voiceChannelStateUpdate(_ *discordgo.Session, state *discordgo.VoiceStateUp
 
 func makePresenceHandler(dg *discordgo.Session, notifyChannel string) func(presence.Member) {
 	return func(m presence.Member) {
-		member, err := dg.GuildMember(m.GuildID, m.MemberID)
+		channel, err := dg.Channel(m.ChannelID)
 		if err != nil {
-			log.Println("could not resolve guild member:", err)
+			log.Println("could not resolve channel:", err)
+			return
+		}
+
+		gm, err := dg.GuildMember(m.GuildID, m.MemberID)
+		if err != nil {
+			log.Println("could not resolve guild gm:", err)
 			return
 		}
 
 		// do not announce bot users joining a channel
-		if member.User.Bot {
+		if gm.User.Bot {
 			return
 		}
 
 		message := &discordgo.MessageSend{
+			Content: fmt.Sprintf("%s just joined %s", gm.DisplayName(), channel.Name),
 			Embed: &discordgo.MessageEmbed{
-				Description: fmt.Sprintf("<@%s> just joined <#%s>", m.MemberID, m.ChannelID),
+				Fields: []*discordgo.MessageEmbedField{
+					{Name: "Member", Value: fmt.Sprintf("<@%s>", m.MemberID)},
+					{Name: "Channel", Value: fmt.Sprintf("<#%s>", m.ChannelID)},
+				},
 				Thumbnail: &discordgo.MessageEmbedThumbnail{
-					URL:    member.AvatarURL("1024"),
+					URL:    gm.AvatarURL("1024"),
 					Width:  512,
 					Height: 512,
 				},
